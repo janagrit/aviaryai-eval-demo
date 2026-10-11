@@ -1,0 +1,18 @@
+# Virtual environments
+.venv/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Test cache
+.pytest_cache/
+
+# Secrets
+.env
+
+# DeepEval local cache
+.deepeval/
+
+# macOS
+.DS_Store

@@ -1,0 +1,42 @@
+name: Adversarial eval
+
+# Fully offline: the deterministic metrics need no API keys, so none are
+# configured here. The optional LLM-judge stubs are never run in CI.
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      # deepeval 3.9.9 needs Python 3.10+ (it uses `X | None` annotations).
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pytest checks
+        run: python -m pytest tests/ -q
+
+      # Exits 1 if any Strict Agent score drops below
+      # regression/baseline_scores.json.
+      - name: Run eval and regression gate
+        run: python run_eval.py
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: report/eval_report.md
