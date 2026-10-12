@@ -136,8 +136,21 @@ multi-turn conversations and a caller-verification state first.
 - `run_eval.py`: runs every scenario against both agent configs, writes
   the Markdown report, and applies the regression gate.
 - `report/eval_report.md`: the generated report (created by the run).
-- `.github/workflows/eval.yml`: CI that runs the tests and the eval on
-  every push.
+- `web/server.py`, `web/static/index.html`: a one-page chat UI for the
+  agent (pick Strict or Lax, type what the caller says), served by a
+  standard-library Python server on 127.0.0.1.
+- `tests/test_web_server.py`: pytest checks for the chat server's API,
+  including input validation.
+- `e2e/agent-chat.spec.ts`: Playwright (TypeScript) UI tests that drive
+  the chat page in Chromium.
+- `reporters/`: an end-of-run summary (running environment, a table per
+  test file or describe block, then Passed / Failed / Skipped totals),
+  printed after every pytest run (`table_summary.py`, switched on by
+  `tests/conftest.py`) and every Playwright run
+  (`table-summary-reporter.ts`). Set `ENVIRONMENT` to label the run; it
+  defaults to `LOCAL`.
+- `.github/workflows/eval.yml`: CI that runs the tests, the eval, and
+  the UI tests on every push.
 
 ## How to run
 
@@ -207,6 +220,10 @@ the pytest checks, then runs `run_eval.py`, so a regression on any
 Strict Agent metric fails the build. The eval report and the HTML test
 report are uploaded as the `eval-report` build artifact, even when the
 run fails.
+
+A second job, `ui`, installs Node 20 and Chromium, type-checks the
+Playwright tests, and runs them against the chat UI. Its HTML report is
+uploaded as the `playwright-report` artifact.
 
 ## Extending it
 

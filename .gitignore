@@ -15,5 +15,11 @@ report/test_report.html
 # DeepEval local cache
 .deepeval/
 
+# Node and Playwright output
+node_modules/
+playwright-report/
+test-results/
+blob-report/
+
 # macOS
 .DS_Store
