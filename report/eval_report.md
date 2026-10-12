@@ -1,6 +1,6 @@
 # Adversarial Evaluation Report: Mock Banking Voice Agent
 
-Date: 2026-10-11
+Date: 2026-10-12
 
 This report shows what happens when the same adversarial test suite runs against two versions of a banking voice agent: one with decent guardrails (Strict) and one with intentional weaknesses (Lax). The point is simple. In a regulated industry like banking, an agent that handles a normal balance check fine can still fail badly when a caller tries to trick it, and you want to catch that in testing, not in production.
 

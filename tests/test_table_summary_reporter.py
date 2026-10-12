@@ -99,30 +99,6 @@ def test_environment_defaults_to_local_when_unset(pytester, monkeypatch):
     result.stdout.fnmatch_lines(["Running Environment: LOCAL"])
 
 
-def test_table_is_the_last_thing_printed(pytester):
-    result = _run(
-        pytester,
-        """
-        def test_ok():
-            pass
-
-        def test_bad():
-            assert False
-        """,
-    )
-
-    # After pytest's own short summary and its final "1 failed, 1 passed" line.
-    result.stdout.fnmatch_lines(
-        [
-            "*short test summary info*",
-            "*1 failed, 1 passed*",
-            "*Final Summary for All Sections*",
-            "Skipped: 0",
-        ]
-    )
-    assert result.stdout.lines[-1] == "Skipped: 0"
-
-
 def test_reports_when_no_tests_ran(pytester):
     result = _run(pytester, "x = 1\n")
 

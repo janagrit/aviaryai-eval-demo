@@ -1,9 +1,9 @@
 """End-of-run table summary for pytest.
 
-Prints the running environment, one table per section (test file, or
-file::Class), then a combined table and Passed / Failed / Skipped totals.
-Same layout as reporters/table-summary-reporter.ts for Playwright. Wired
-in by tests/conftest.py; uses only the standard library.
+Python port of table-summary-reporter.js (a Playwright reporter): one
+table per section (test file, or file::Class), then a combined table and
+Passed / Failed / Skipped totals. Wired in by tests/conftest.py; uses
+only the standard library.
 """
 
 import os
@@ -16,8 +16,6 @@ MAX_NAME_WIDTH = 70
 
 @dataclass(frozen=True)
 class TestRow:
-    __test__ = False  # not a pytest test class, despite the name
-
     section: str
     name: str
     outcome: str
@@ -76,13 +74,8 @@ class TableSummaryPlugin:
         row = TestRow(section or "Unknown Suite", name, report.outcome, report.duration)
         self._rows = {**self._rows, report.nodeid: row}
 
-    def pytest_unconfigure(self, config):
-        # Runs after pytest's own summary and its final "N passed" line,
-        # so the table is the last thing on the console.
-        tr = config.pluginmanager.get_plugin("terminalreporter")
-        if tr is None:
-            return
-        tr.write_line("")
+    def pytest_terminal_summary(self, terminalreporter):
+        tr = terminalreporter
         tr.section("Final Summary for All Sections")
         tr.write_line("Running Environment: %s" % running_environment(), bold=True)
         rows = list(self._rows.values())

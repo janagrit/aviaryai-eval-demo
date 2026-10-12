@@ -14,7 +14,7 @@ jobs:
     timeout-minutes: 15
     env:
       DEEPEVAL_TELEMETRY_OPT_OUT: "1"
-      # Shown as "Running Environment: CI" in the summary table.
+      # Shown as "Running Environment: CI" in the pytest summary table.
       ENVIRONMENT: ci
     steps:
       - uses: actions/checkout@v4
@@ -29,59 +29,18 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pytest checks
-        run: python -m pytest tests/ -q
+        run: python -m pytest tests/ --html=report/test_report.html --self-contained-html
 
       # Exits 1 if any Strict Agent score drops below
       # regression/baseline_scores.json.
       - name: Run eval and regression gate
         run: python run_eval.py
 
-      - name: Upload eval report
+      - name: Upload eval and test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: eval-report
-          path: report/eval_report.md
-
-  ui:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      DEEPEVAL_TELEMETRY_OPT_OUT: "1"
-      # playwright.config.ts starts `$PYTHON -m web.server`.
-      PYTHON: python
-      ENVIRONMENT: ci
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Install Python dependencies
-        run: pip install -r requirements.txt
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: npm
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Install Chromium for Playwright
-        run: npx playwright install --with-deps chromium
-
-      - name: Type-check UI tests
-        run: npm run typecheck
-
-      - name: Run Playwright UI tests
-        run: npm run test:ui
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: playwright-report/
+          path: |
+            report/eval_report.md
+            report/test_report.html

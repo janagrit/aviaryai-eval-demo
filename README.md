@@ -126,7 +126,13 @@ multi-turn conversations and a caller-verification state first.
 - `metrics/custom_metrics.py`: the five deterministic DeepEval metrics.
 - `metrics/llm_judge_stubs.py`: optional GEval-based judges, need an API
   key, not used by the default run.
+- `tests/test_table_summary_reporter.py`: pytest checks for the summary
+  table reporter.
 - `regression/`: the per-metric score baseline and the comparison logic.
+- `reporters/table_summary.py`: prints a per-file results table and
+  Passed / Failed / Skipped totals at the end of every pytest run
+  (switched on by `tests/conftest.py`). Set `ENVIRONMENT` to label the
+  run; it defaults to `LOCAL`.
 - `run_eval.py`: runs every scenario against both agent configs, writes
   the Markdown report, and applies the regression gate.
 - `report/eval_report.md`: the generated report (created by the run).
@@ -160,31 +166,12 @@ python3 -m venv .venv
 That is it. No API keys, no network access needed after install. The
 report lands in `report/eval_report.md`.
 
-## Chat UI and Playwright UI tests
-
-Try the agent in a browser:
+For a browsable test report, add `--html`:
 
 ```bash
-.venv/bin/python -m web.server     # then open http://127.0.0.1:8000
+.venv/bin/python -m pytest tests/ --html=report/test_report.html --self-contained-html
+open report/test_report.html
 ```
-
-The UI tests need Node 20+. Playwright starts the chat server itself
-(on port 8790; override with `UI_PORT`), so there's nothing else to run:
-
-```bash
-npm install
-npx playwright install chromium
-npm run test:ui              # headless
-npm run test:ui:headed       # watch it drive a real browser window
-npm run test:ui:report       # open the HTML report from the last run
-```
-
-The 11 UI tests cover the page itself (Send disabled on empty input,
-Enter to send, reply labels), the adversarial scenarios through the
-browser (the Strict agent never shows the balance or another customer's
-data; the Lax agent visibly leaks it), and robustness: caller input is
-rendered as text rather than HTML (an XSS check), API failures show an
-error, and the page has no horizontal scroll at 320px.
 
 ## Sample output
 
@@ -230,8 +217,9 @@ intentional (new scenario, retired metric), accept it with:
 `.github/workflows/eval.yml` runs on every push, on Python 3.12, with no
 API keys or secrets configured. It installs `requirements.txt`, runs
 the pytest checks, then runs `run_eval.py`, so a regression on any
-Strict Agent metric fails the build. The generated report is uploaded
-as the `eval-report` build artifact, even when the run fails.
+Strict Agent metric fails the build. The eval report and the HTML test
+report are uploaded as the `eval-report` build artifact, even when the
+run fails.
 
 A second job, `ui`, installs Node 20 and Chromium, type-checks the
 Playwright tests, and runs them against the chat UI. Its HTML report is
