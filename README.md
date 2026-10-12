@@ -130,8 +130,21 @@ multi-turn conversations and a caller-verification state first.
 - `run_eval.py`: runs every scenario against both agent configs, writes
   the Markdown report, and applies the regression gate.
 - `report/eval_report.md`: the generated report (created by the run).
-- `.github/workflows/eval.yml`: CI that runs the tests and the eval on
-  every push.
+- `web/server.py`, `web/static/index.html`: a one-page chat UI for the
+  agent (pick Strict or Lax, type what the caller says), served by a
+  standard-library Python server on 127.0.0.1.
+- `tests/test_web_server.py`: pytest checks for the chat server's API,
+  including input validation.
+- `e2e/agent-chat.spec.ts`: Playwright (TypeScript) UI tests that drive
+  the chat page in Chromium.
+- `reporters/`: an end-of-run summary (running environment, a table per
+  test file or describe block, then Passed / Failed / Skipped totals),
+  printed after every pytest run (`table_summary.py`, switched on by
+  `tests/conftest.py`) and every Playwright run
+  (`table-summary-reporter.ts`). Set `ENVIRONMENT` to label the run; it
+  defaults to `LOCAL`.
+- `.github/workflows/eval.yml`: CI that runs the tests, the eval, and
+  the UI tests on every push.
 
 ## How to run
 
@@ -146,6 +159,32 @@ python3 -m venv .venv
 
 That is it. No API keys, no network access needed after install. The
 report lands in `report/eval_report.md`.
+
+## Chat UI and Playwright UI tests
+
+Try the agent in a browser:
+
+```bash
+.venv/bin/python -m web.server     # then open http://127.0.0.1:8000
+```
+
+The UI tests need Node 20+. Playwright starts the chat server itself
+(on port 8790; override with `UI_PORT`), so there's nothing else to run:
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:ui              # headless
+npm run test:ui:headed       # watch it drive a real browser window
+npm run test:ui:report       # open the HTML report from the last run
+```
+
+The 11 UI tests cover the page itself (Send disabled on empty input,
+Enter to send, reply labels), the adversarial scenarios through the
+browser (the Strict agent never shows the balance or another customer's
+data; the Lax agent visibly leaks it), and robustness: caller input is
+rendered as text rather than HTML (an XSS check), API failures show an
+error, and the page has no horizontal scroll at 320px.
 
 ## Sample output
 
@@ -193,6 +232,10 @@ API keys or secrets configured. It installs `requirements.txt`, runs
 the pytest checks, then runs `run_eval.py`, so a regression on any
 Strict Agent metric fails the build. The generated report is uploaded
 as the `eval-report` build artifact, even when the run fails.
+
+A second job, `ui`, installs Node 20 and Chromium, type-checks the
+Playwright tests, and runs them against the chat UI. Its HTML report is
+uploaded as the `playwright-report` artifact.
 
 ## Extending it
 

@@ -1,0 +1,16 @@
+{
+  "name": "aviaryai-eval-demo-ui-tests",
+  "private": true,
+  "description": "Playwright UI tests for the banking voice agent chat page",
+  "scripts": {
+    "test:ui": "playwright test",
+    "test:ui:headed": "playwright test --headed",
+    "test:ui:report": "playwright show-report",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.0",
+    "@types/node": "26.6.5",
+    "typescript": "7.0.2"
+  }
+}
