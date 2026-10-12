@@ -1,12 +1,13 @@
 # Virtual environments
-.venv/
+.venv*/
 
 # Python bytecode
 __pycache__/
 *.py[cod]
 
-# Test cache
+# Test cache and generated HTML test report
 .pytest_cache/
+report/test_report.html
 
 # Secrets
 .env

@@ -14,6 +14,8 @@ jobs:
     timeout-minutes: 15
     env:
       DEEPEVAL_TELEMETRY_OPT_OUT: "1"
+      # Shown as "Running Environment: CI" in the pytest summary table.
+      ENVIRONMENT: ci
     steps:
       - uses: actions/checkout@v4
 
@@ -27,16 +29,18 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run pytest checks
-        run: python -m pytest tests/ -q
+        run: python -m pytest tests/ --html=report/test_report.html --self-contained-html
 
       # Exits 1 if any Strict Agent score drops below
       # regression/baseline_scores.json.
       - name: Run eval and regression gate
         run: python run_eval.py
 
-      - name: Upload eval report
+      - name: Upload eval and test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: eval-report
-          path: report/eval_report.md
+          path: |
+            report/eval_report.md
+            report/test_report.html
